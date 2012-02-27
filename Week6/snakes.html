@@ -1,0 +1,182 @@
+<html>
+
+
+<body >
+
+
+<canvas id="canvas" width="600"  height="600">HTML5 not supported
+</canvas>
+
+<script type="text/javascript">
+
+var canvas;
+var ctx;
+var dx = 0;
+var dy = 0;
+var dxold = 0;
+var dyold = 0;
+var delta = 30;
+var WIDTH = 600;
+var HEIGHT = 600;
+var RECT_WIDTH = 30;
+var RECT_HEIGHT = 30;
+var startGame= false;
+var gameOver = false;
+var currentBox = 0;
+var boxes = [{x:0, y:0}, {x:0, y:0}, {x:0, y:0}, {x:0, y:0}];
+var foods = [];
+var foodTimer = 0;
+
+function init() {
+
+	canvas = document .getElementById("canvas");
+	context =  canvas.getContext("2d");
+	context.fillStyle = "rgb(0,0,200)";
+	context.fillRect(0,0,WIDTH, HEIGHT);
+	window.onkeydown = keydownControl;	
+	var len = boxes.length;
+	var x = 300;
+	var y = 300;
+	for(var i = 0; i < len; i++) {
+	    boxes[i].x = x - i * RECT_WIDTH;
+	    boxes[i].y = y;	    
+	}
+	
+	return setInterval(gameLoop,300);
+}
+
+function gameLoop(){
+	draw();
+	update();
+}
+
+function draw() {
+	clear();
+	context.fillStyle = "rgb(200,0,0)";
+	var len = boxes.length;
+	for(var i = 0; i < len; i++) {
+	    context.fillRect(boxes[i].x , boxes[i].y, RECT_WIDTH-2 ,RECT_HEIGHT-2);
+	}
+	if(gameOver == true) {
+		context.font = "20pt Arial";
+		context.fillText("Game Over", 180,250);
+	}
+
+	var foodlen = foods.length;
+	for(var i = 0; i < foodlen; i++) {
+	    context.fillRect(foods[i].x , foods[i].y, RECT_WIDTH-2 ,RECT_HEIGHT-2);
+	}		
+		
+}
+
+function update() {
+
+	checkForGameOver();
+	updateBoxPositions();
+	addFoodToBoxesIfInLine();
+	addFoodBoxAtRandomLocation();	
+}
+
+function addFoodToBoxesIfInLine() {
+	
+	var foodlen = foods.length;
+	for(var i = 0; i < foodlen; i++) {
+		var food = foods[i];
+	    if(boxes[0].x == food.x && boxes[0].y == food.y) {
+	    	foods.splice(i,1);
+	    	var lastBox = boxes.length - 1;
+	    	boxes.push({x:boxes[lastBox].x - dxold, y:boxes[lastBox].y - dyold});
+	    }
+	}		
+	
+
+}
+
+
+function addFoodBoxAtRandomLocation() {
+	foodTimer++;
+	
+	if(foodTimer >= 8) {
+		var foodx = Math.floor(Math.random()*(WIDTH/RECT_WIDTH))*RECT_WIDTH;
+		var foody = Math.floor(Math.random()*(HEIGHT/RECT_HEIGHT))*RECT_HEIGHT;
+		foods.push({x:foodx, y:foody});
+		foodTimer = 0;		
+	}
+
+}
+
+
+function updateBoxPositions() {
+	var len = boxes.length;
+	for(var i = 0; i < len; i++) {
+		if(i <= currentBox) {
+		    boxes[i].x = boxes[i].x + dx;
+		    boxes[i].y = boxes[i].y + dy;
+	    }
+	    else {
+	        boxes[i].x = boxes[i].x + dxold;
+		    boxes[i].y = boxes[i].y + dyold;	    
+	    }
+	    
+	}
+	
+	
+	if(currentBox == len) {
+		dxold = dx;
+		dyold = dy;
+	}
+	else {
+		currentBox++;	
+	}
+}
+
+function checkForGameOver() {
+	if(boxes[0].x <= 5 || boxes[0].x >= WIDTH - RECT_WIDTH - 5 || boxes[0].y <= 5 || boxes[0].y >= HEIGHT - RECT_HEIGHT - 5) {
+		dx = 0;
+		dy = 0;
+		gameOver = true; 
+	}
+}
+
+function clear(){
+	context.clearRect(5,5,WIDTH - 10,HEIGHT - 10);
+}
+
+function keydownControl(e) {
+	if(e.keyCode == 32) {
+		startGame= true;
+		dx = delta;
+		dxold = delta;
+	}
+	
+	if(currentBox == boxes.length) {
+		if(startGame == true && gameOver == false) {
+		 	if(e.keyCode == 37) {
+				dx = -delta;
+				dy = 0;
+				currentBox = 0;
+			} else if(e.keyCode == 38) {
+				dx = 0;
+				dy = -delta;
+				currentBox = 0;
+			} else if(e.keyCode == 39) {
+				dx = delta;
+				dy = 0;
+				currentBox = 0;
+			} else if(e.keyCode == 40) {
+				dx = 0;
+				dy = delta;
+				currentBox = 0;
+			} 
+		}
+	}
+}
+
+init();
+
+</script>
+
+
+</body>
+
+</html>
